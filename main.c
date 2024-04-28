@@ -1,12 +1,19 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "list.h"
 
+#define NUM_THREADS 2
+
 
 void
-run_tests(struct linked_list *ll)
+*thread(void *arg)
 {
+    struct linked_list *ll = arg;
+    char *ret = NULL;
+
     // add some elements
     ll_add(ll, 34);
     ll_print(ll);
@@ -27,12 +34,12 @@ run_tests(struct linked_list *ll)
     ll_print(ll);
         
     // try to destroy
-    int ret = ll_destroy(ll);
-    if (!ret)
-        printf("cannot destroy a full list\n");
-    else
-        printf("destroyed a full list somehow... yikes!\n");
-    ll_print(ll);
+//    int ret = ll_destroy(ll);
+//    if (!ret)
+//        printf("cannot destroy a full list\n");
+//    else
+//        printf("destroyed a full list somehow... yikes!\n");
+//    ll_print(ll);
 
     // check contains
     for (int i = 3; i < 9; i++) {
@@ -51,20 +58,41 @@ run_tests(struct linked_list *ll)
             printf("remove returned false\n"); // should print twice at end
     }
     ll_print(ll);
-    
+
+    strcpy(ret, "success");
+    pthread_exit(ret);
 }
 
 int
 main(void)
 {
     struct linked_list *ll = ll_create();
-    ll_print(ll);
+    pthread_t threads[NUM_THREADS];
+    int rc;
 
-    run_tests(ll);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        rc = pthread_create(&threads[i], NULL, thread, (void*)ll);
+        if (rc) {
+            printf("thread %d creation failed with code %d\n", i, rc);
+            exit(rc);
+        }
+        printf("thread %d created\n", i);
+    }
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        rc = pthread_join(threads[i], NULL);
+        if (rc) {
+            printf("thread %d join failed with code %d\n", i, rc);
+            exit(rc);
+        }
+        printf("thread %d joined\n", i);
+    }
+
+    printf("all threads finished!\n");
 
     // destroy
-    int ret = ll_destroy(ll);
-    if (!ret)
+    rc = ll_destroy(ll);
+    if (!rc)
         printf("list doesn't register as empty... yikes!\n");
     else {
         printf("successfully destroyed list!\n");
