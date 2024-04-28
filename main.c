@@ -25,17 +25,17 @@ int
 main(void)
 {
     struct linked_list *ll = ll_create();
-    print_list(ll);
+    ll_print(ll);
 
     // add some elements
     ll_add(ll, 34);
-    print_list(ll);
+    ll_print(ll);
 
     int elements[] = {4, 76, -23, 7, 0, 23, -37};
     for (int i = 0; i < 7; i++) {
         ll_add(ll, elements[i]);
     }
-    print_list(ll);
+    ll_print(ll);
 
     // delete some elements
     bool result;
@@ -44,7 +44,7 @@ main(void)
         if (!result)
             printf("remove returned false\n");
     }
-    print_list(ll);
+    ll_print(ll);
         
     // try to destroy
     int ret = ll_destroy(ll);
@@ -52,7 +52,7 @@ main(void)
         printf("cannot destroy a full list\n");
     else
         printf("destroyed a full list somehow... yikes!\n");
-    print_list(ll);
+    ll_print(ll);
 
     // check contains
     for (int i = 3; i < 9; i++) {
@@ -62,7 +62,7 @@ main(void)
         else
             printf("list doesn't contain %d\n", i);
     }
-    print_list(ll);
+    ll_print(ll);
 
     // remove elements to 0
     for (int i = 0; i < 7; i++) { // two bad removals at the end
@@ -70,7 +70,7 @@ main(void)
         if (!result)
             printf("remove returned false\n"); // should print twice at end
     }
-    print_list(ll);
+    ll_print(ll);
     
     // destroy
     ret = ll_destroy(ll);

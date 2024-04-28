@@ -4,16 +4,20 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <pthread.h>
+
 
 struct list_item {
     int value;
     struct list_item *next;
 };
 
+
 struct linked_list {
     struct list_item *head;
     int size;
 };
+
 
 static inline struct linked_list *
 ll_create(void)
@@ -25,6 +29,7 @@ ll_create(void)
     return ll;
 }
 
+
 static inline int
 ll_destroy(struct linked_list *ll)
 {
@@ -33,6 +38,7 @@ ll_destroy(struct linked_list *ll)
     free(ll);
     return 1;
 }
+
 
 static inline void
 ll_add(struct linked_list *ll, int value)
@@ -47,11 +53,13 @@ ll_add(struct linked_list *ll, int value)
     ll->size++;
 }
 
+
 static inline int
 ll_length(struct linked_list *ll)
 {
 	return ll->size;
 }
+
 
 static inline bool
 ll_remove_first(struct linked_list *ll)
@@ -62,6 +70,7 @@ ll_remove_first(struct linked_list *ll)
     ll->size--;
 	return true;
 }
+
 
 static inline int
 ll_contains(struct linked_list *ll, int value)
@@ -76,5 +85,24 @@ ll_contains(struct linked_list *ll, int value)
     }
 	return 0;
 }
+
+
+static inline void
+ll_print(struct linked_list *ll)
+{
+    printf("\nLINKED LIST: size = %d\n", ll_length(ll));
+    printf("HEAD\n");
+
+    int i = 1;
+    struct list_item *cur = ll->head;
+    while (cur != NULL) {
+        printf("%3d: %d\n", i, cur->value);
+        cur = cur->next;
+        i++;
+    }
+
+    printf("TAIL\n\n");
+}
+
 
 #endif

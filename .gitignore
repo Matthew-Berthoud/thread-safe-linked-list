@@ -1,3 +1,9 @@
+# executable
+test
+
+# Vim buffers
+*.swp
+
 # Prerequisites
 *.d
 
