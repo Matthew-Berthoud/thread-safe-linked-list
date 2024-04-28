@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <pthread.h>
 
 
@@ -56,14 +57,18 @@ ll_destroy(struct linked_list *ll)
 static inline void
 ll_add(struct linked_list *ll, int value)
 {
-    struct list_item *old_head = ll->head;
     struct list_item *new_item = malloc(sizeof(struct list_item));
-
     new_item->value = value;
-    new_item->next = old_head;
 
+    pthread_mutex_lock(&ll->lock);
+    printf("MUTEX_LOCK\n");
+    // critical section
+    new_item->next = ll->head;
     ll->head = new_item;
     ll->size++;
+    // end critical section
+    printf("MUTEX_UNLOCK\n");
+    pthread_mutex_unlock(&ll->lock);
 }
 
 

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <pthread.h>
 
-#include <list.h>
+#include "list.h"
 
 
 void
