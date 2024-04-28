@@ -75,6 +75,7 @@ ll_add(struct linked_list *ll, int value)
 static inline int
 ll_length(struct linked_list *ll)
 {
+    // no lock required
 	return ll->size;
 }
 
@@ -82,11 +83,22 @@ ll_length(struct linked_list *ll)
 static inline bool
 ll_remove_first(struct linked_list *ll)
 {
+    bool removed;
+    pthread_mutex_lock(&ll->lock);
+    printf("MUTEX_LOCK\n");
+    // critical section
     if (ll->size == 0)
-        return false;
-    ll->head = ll->head->next;
-    ll->size--;
-	return true;
+        removed = false;
+    else {
+        ll->head = ll->head->next;
+        ll->size--;
+        removed = true;
+    }
+    // end critical section
+    printf("MUTEX_UNLOCK\n");
+    pthread_mutex_unlock(&ll->lock);
+
+	return removed;
 }
 
 
@@ -94,20 +106,36 @@ static inline int
 ll_contains(struct linked_list *ll, int value)
 {
     int i = 1;
+
+    pthread_mutex_lock(&ll->lock);
+    printf("MUTEX_LOCK\n");
+    // critical section
+
     struct list_item *cur = ll->head;
     while (cur != NULL) {
-        if (cur->value == value)
-            return i;
+        if (cur->value == value){
+            break;
+        }
         cur = cur->next;
         i++;
     }
-	return 0;
+    // return 0 if node not found
+    if (cur == NULL)
+        i = 0;
+    // end critical section
+    printf("MUTEX_UNLOCK\n");
+    pthread_mutex_unlock(&ll->lock);
+
+	return i;
 }
 
 
 static inline void
 ll_print(struct linked_list *ll)
 {
+    pthread_mutex_lock(&ll->lock);
+    printf("MUTEX_LOCK\n");
+    // critical section
     printf("\nLINKED LIST: size = %d\n", ll_length(ll));
     printf("HEAD\n");
 
@@ -118,8 +146,10 @@ ll_print(struct linked_list *ll)
         cur = cur->next;
         i++;
     }
-
     printf("TAIL\n\n");
+    // end critical section
+    printf("MUTEX_UNLOCK\n");
+    pthread_mutex_unlock(&ll->lock);
 }
 
 
