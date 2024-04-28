@@ -8,7 +8,6 @@ print_list(struct linked_list *ll)
 {
     printf("\nLINKED LIST: size = %d\n", ll_length(ll));
     printf("HEAD\n");
-    printf("michael mehler\n");
 
     int i = 1;
     struct list_item *cur = ll->head;
