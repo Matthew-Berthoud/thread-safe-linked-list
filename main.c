@@ -1,32 +1,12 @@
 #include <stdio.h>
+#include <pthread.h>
 
 #include <list.h>
 
 
 void
-print_list(struct linked_list *ll)
+run_tests(struct linked_list *ll)
 {
-    printf("\nLINKED LIST: size = %d\n", ll_length(ll));
-    printf("HEAD\n");
-
-    int i = 1;
-    struct list_item *cur = ll->head;
-    while (cur != NULL) {
-        printf("%3d: %d\n", i, cur->value);
-        cur = cur->next;
-        i++;
-    }
-
-    printf("TAIL\n\n");
-}
-
-
-int
-main(void)
-{
-    struct linked_list *ll = ll_create();
-    ll_print(ll);
-
     // add some elements
     ll_add(ll, 34);
     ll_print(ll);
@@ -72,8 +52,18 @@ main(void)
     }
     ll_print(ll);
     
+}
+
+int
+main(void)
+{
+    struct linked_list *ll = ll_create();
+    ll_print(ll);
+
+    run_tests(ll);
+
     // destroy
-    ret = ll_destroy(ll);
+    int ret = ll_destroy(ll);
     if (!ret)
         printf("list doesn't register as empty... yikes!\n");
     else {
