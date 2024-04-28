@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 
 struct list_item {
@@ -14,6 +15,7 @@ struct list_item {
 
 struct linked_list {
     struct list_item *head;
+    pthread_mutex_t lock;
     int size;
 };
 
@@ -23,17 +25,29 @@ ll_create(void)
 {
 	struct linked_list *ll = malloc(sizeof(struct linked_list));
     if (ll == NULL)
-        return NULL;
+        exit(1);
+
     ll->size = 0;
+
+    int rc = pthread_mutex_init(&ll->lock, NULL);
+    if (rc != 0)
+        exit(rc);
+
     return ll;
 }
 
 
+// Returns 1 if list destroyed, 0 if not
 static inline int
 ll_destroy(struct linked_list *ll)
 {
     if (ll->size != 0)
         return 0;
+
+    int rc = pthread_mutex_destroy(&ll->lock);
+    if (rc != 0)
+        exit(rc);
+
     free(ll);
     return 1;
 }
@@ -105,3 +119,4 @@ ll_print(struct linked_list *ll)
 
 
 #endif
+
