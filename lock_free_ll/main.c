@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 
     n_threads = atoi(argv[1]);
     if (n_threads < MIN_THREADS || n_threads > MAX_THREADS) {
-        printf("Use 5-200 threads\n");
+        printf("Use %d-%d threads\n", MIN_THREADS, MAX_THREADS);
         return 1;
     }
 

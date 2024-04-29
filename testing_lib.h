@@ -71,11 +71,11 @@ void *thread(void *arg) {
         test_remove_first(ll, 5);
         test_contains(ll, 5);
 
-        test_add(ll, 5);
+        test_add(ll, 15);
         test_contains(ll, 5);
-        test_remove_idx(ll, 20);
+        test_remove_idx(ll, 4);
         test_remove_first(ll, 5);
-        test_remove_idx(ll, 20);
+        test_remove_idx(ll, 4);
         test_contains(ll, 5);
     }
     
