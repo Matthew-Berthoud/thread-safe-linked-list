@@ -5,7 +5,7 @@
 
 #include "list.h"
 
-#define NUM_THREADS 20
+#define NUM_THREADS 100
 
 
 void
