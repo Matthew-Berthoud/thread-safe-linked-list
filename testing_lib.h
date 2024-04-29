@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mutex_list.h"
-#include "lock_free_list.h"
-
 #define MAX_THREADS 100
 #define MIN_THREADS 2
 // elements added to list will be multiples of 5
@@ -133,23 +130,4 @@ void thread_test_list(int n) {
     else {
         printf("successfully destroyed list!\n");
     }
-}
-
-
-int main(int argc, char *argv[]) {
-    int n_threads;
-
-    if (argc != 2) {
-        printf("Usage: %s <num_threads>\n", argv[0]);
-        return 1;
-    }
-
-    n_threads = atoi(argv[1]);
-    if (n_threads < MIN_THREADS || n_threads > MAX_THREADS) {
-        printf("Use 5-200 threads\n");
-        return 1;
-    }
-
-    thread_test_list(n_threads);
-    return 0;
 }
