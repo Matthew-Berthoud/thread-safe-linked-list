@@ -128,12 +128,15 @@ bool ll_remove_idx(struct linked_list *ll, int idx) {
         return false;
     }
     // idx >= 2
-start_over:
+rem_idx_loop:
     i = 2;
     cur = ll->head;
     while (cur != NULL) {
         if (i != idx - 1) {
             i++;
+            if (!cas(&cur, cur, cur->next)) {
+                goto rem_idx_loop;
+            }
             continue;
         }
         to_delete = cur->next;
@@ -145,7 +148,7 @@ start_over:
             to_delete = NULL;
             return true;
         }
-        goto start_over;
+        goto rem_idx_loop;
     }
 
 	return false;
@@ -158,19 +161,19 @@ int ll_contains(struct linked_list *ll, int value) {
 
     printf("ll_contains\n");
 
+contains_loop:
     i = 0;
-    pthread_mutex_lock(&ll->lock);
     cur = ll->head;
-
     while (cur != NULL) {
-        i++;
-        if (cur->value == value) {
-            pthread_mutex_unlock(&ll->lock);
-            return i; 
+        if (cur->value != value) {
+            i++;
+            if (!cas(&cur, cur, cur->next)) {
+                goto contains_loop;
+            }
+            continue;
         }
-        cur = cur->next;
+        return i; 
     }
-    pthread_mutex_unlock(&ll->lock);
     return 0; // Return 0 if element not found
 }
 
