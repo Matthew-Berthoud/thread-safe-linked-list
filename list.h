@@ -118,45 +118,75 @@ bool ll_remove_first(struct linked_list *ll) {
 }
 
 
+bool ll_remove_idx(struct linked_list *ll, int idx) {
+    struct list_item *cur, *prev;
+    bool removed;
+    int i;
+
+    printf("ll_remove_idx\n");
+
+    if (ll_length(ll) == 0) {
+        return false;
+    }
+    if (idx == 1) {
+        return ll_remove_first(ll);
+    }
+    removed = false;
+    i = 2;
+
+    pthread_mutex_lock(&ll->lock);
+    prev = ll->head;
+    cur = prev->next;
+    while (cur != NULL) {
+        if (idx == i) {
+            prev->next = cur->next;
+            removed = true;
+            break;
+        }
+        prev = cur;
+        cur = cur->next;
+        i++;
+    }
+    pthread_mutex_unlock(&ll->lock);
+
+	return removed;
+}
+
+
 int ll_contains(struct linked_list *ll, int value) {
     struct list_item *cur;
     int i;
 
     printf("ll_contains\n");
 
-    i = 1;
+    i = 0;
     pthread_mutex_lock(&ll->lock);
     cur = ll->head;
 
     while (cur != NULL) {
+        i++;
         if (cur->value == value) {
-            break;
+            pthread_mutex_unlock(&ll->lock);
+            return i; 
         }
         cur = cur->next;
-        i++;
-    }
-    // return 0 if node not found
-    if (cur == NULL) {
-        i = 0;
     }
     pthread_mutex_unlock(&ll->lock);
-
-	return i;
+    return 0; // Return 0 if element not found
 }
 
 
 void ll_print(struct linked_list *ll) {
     struct list_item *cur;
-    int length;
 
     printf("ll_print\n");
 
-    // Outside critical section, since ll_length acquires the lock
-    length = ll_length(ll);
-
+    // Using printf inside mutex, which isn't great
+    // but this function is mainly for testing anyway
+    // so performance isn't a huge concern.
     pthread_mutex_lock(&ll->lock);
     cur = ll->head;
-    printf("HEAD(size %d) [", length);
+    printf("HEAD [");
     while (cur != NULL) {
         if (cur->next == NULL) {// not the last element, add comma
             printf("%d", cur->value);

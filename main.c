@@ -6,7 +6,7 @@
 #include "list.h"
 
 #define MAX_THREADS 100
-#define MIN_THREADS 5
+#define MIN_THREADS 2
 // elements added to list will be multiples of 5
 #define MULT 5
 
@@ -26,10 +26,24 @@ void test_remove_first(struct linked_list *ll, int num_elements) {
 
     for (i = 0; i < num_elements; i++) {
         if (!ll_remove_first(ll)) {
-            printf("remove failed (size 0)\n");
+            printf("remove_first failed (size 0)\n");
         }
         ll_print(ll);
     }
+}
+
+
+void test_remove_idx(struct linked_list *ll, int num_elements) {
+    int i;
+
+    for (i = 0; i < num_elements; i = i + MULT) {
+        // 1, 6, 11, 16, etc... because why not
+        if (!ll_remove_idx(ll, i + 1)) {
+            printf("remove_idx failed (idx not included)\n");
+        }
+        ll_print(ll);
+    }
+
 }
 
 
@@ -50,15 +64,23 @@ void test_contains(struct linked_list *ll, int num_elements) {
 
 void *thread(void *arg) {
     struct linked_list *ll = arg;
+    int i;
 
-    test_add(ll, 10);
-    test_remove_first(ll, 5);
-    test_contains(ll, 10);
+    // These can be reordered or reused however for testing
+    for (i = 0; i < 10; i++) {
+        test_add(ll, 5);
+        test_contains(ll, 5);
+        test_remove_first(ll, 5);
+        test_contains(ll, 5);
 
-    test_add(ll, 5);
-    test_contains(ll, 10);
-    test_remove_first(ll, 10);
-
+        test_add(ll, 5);
+        test_contains(ll, 5);
+        test_remove_idx(ll, 20);
+        test_remove_first(ll, 5);
+        test_remove_idx(ll, 20);
+        test_contains(ll, 5);
+    }
+    
     printf("exiting thread\n");
     pthread_exit("");
 }
@@ -122,7 +144,7 @@ int main(int argc, char *argv[]) {
     }
 
     n_threads = atoi(argv[1]);
-    if (n_threads <= MIN_THREADS || n_threads > MAX_THREADS) {
+    if (n_threads < MIN_THREADS || n_threads > MAX_THREADS) {
         printf("Use 5-200 threads\n");
         return 1;
     }
