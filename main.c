@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "list.h"
+#include "mutex_list.h"
+#include "lock_free_list.h"
 
 #define MAX_THREADS 100
 #define MIN_THREADS 2
