@@ -19,21 +19,16 @@ struct list_item {
 
 struct linked_list {
     struct list_item *head;
-    pthread_mutex_t lock;
 };
 
 
 struct linked_list * ll_create(void) {
 	struct linked_list *ll;
-    int rc;
 
     printf("ll_create\n");
 
     ll = malloc(sizeof(struct linked_list));
     assert(ll != NULL);
-
-    rc = pthread_mutex_init(&ll->lock, NULL);
-    assert(rc == 0);
 
     return ll;
 }
@@ -41,26 +36,15 @@ struct linked_list * ll_create(void) {
 
 // Returns 1 if list destroyed, 0 if not
 int ll_destroy(struct linked_list *ll) {
-    int rc, empty;
 
     printf("ll_destroy\n");
 
-    empty = 1;
-
-    pthread_mutex_lock(&ll->lock);
     if (ll->head != NULL) {
-        empty = 0;
         printf("List not empty, destroy failed.");
+        return 0;
     }
-    pthread_mutex_unlock(&ll->lock);
-
-    if (empty) {
-        rc = pthread_mutex_destroy(&ll->lock);
-        assert(rc == 0);
-        free(ll);
-    }
-
-    return empty;
+    free(ll);
+    return 1;
 }
 
 
@@ -87,11 +71,13 @@ int ll_length(struct linked_list *ll) {
 
     printf("ll_length\n");
 
+length_loop:
     cur = ll->head;
     n = 0;
-
     while (cur != NULL) {
-        cur = cur->next;
+        if (!cas(&cur, cur, cur->next)) {
+            goto length_loop;
+        }
         n++;
     }
 
@@ -183,23 +169,22 @@ void ll_print(struct linked_list *ll) {
 
     printf("ll_print\n");
 
-    // Using printf inside mutex, which isn't great
-    // but this function is mainly for testing anyway
-    // so performance isn't a huge concern.
-    pthread_mutex_lock(&ll->lock);
-    cur = ll->head;
     printf("HEAD [");
+
+print_loop:
+    cur = ll->head;
     while (cur != NULL) {
         if (cur->next == NULL) {// not the last element, add comma
             printf("%d", cur->value);
+            break;
         } else {
             printf("%d, ", cur->value);
         }
-
-        cur = cur->next;
+        if (!cas(&cur, cur, cur->next)) {
+            goto print_loop;
+        }
     }
     printf("] TAIL\n");
-    pthread_mutex_unlock(&ll->lock);
 }
 
 
