@@ -63,7 +63,7 @@ int ll_destroy(struct linked_list *ll) {
 
 
 void ll_add(struct linked_list *ll, int value) {
-    struct list_item *new_item;
+    struct list_item *new_item, *next;
 
     printf("ll_add\n");
 
@@ -71,11 +71,11 @@ void ll_add(struct linked_list *ll, int value) {
     assert(new_item != NULL);
     
     new_item->value = value;
-
-    pthread_mutex_lock(&ll->lock);
-    new_item->next = ll->head;
-    ll->head = new_item;
-    pthread_mutex_unlock(&ll->lock);
+    
+    do {
+        next = ll->head;
+        new_item->next = next;
+    } while (!__sync_bool_compare_and_swap(&(ll->head), next, new_item));
 }
 
 
