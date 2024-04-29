@@ -5,14 +5,13 @@
 
 #include "list.h"
 
-#define NUM_THREADS 2
+#define NUM_THREADS 20
 
 
 void
 *thread(void *arg)
 {
     struct linked_list *ll = arg;
-    char *ret = NULL;
 
     // add some elements
     ll_add(ll, 34);
@@ -21,8 +20,8 @@ void
     int elements[] = {4, 76, -23, 7, 0, 23, -37};
     for (int i = 0; i < 7; i++) {
         ll_add(ll, elements[i]);
+        ll_print(ll);
     }
-    ll_print(ll);
 
     // delete some elements
     bool result;
@@ -30,15 +29,15 @@ void
         result = ll_remove_first(ll);
         if (!result)
             printf("remove returned false\n");
+        ll_print(ll);
     }
-    ll_print(ll);
         
     // try to destroy
 //    int ret = ll_destroy(ll);
 //    if (!ret)
 //        printf("cannot destroy a full list\n");
 //    else
-//        printf("destroyed a full list somehow... yikes!\n");
+//        printf("destroyed a full list\n");
 //    ll_print(ll);
 
     // check contains
@@ -48,19 +47,19 @@ void
             printf("list contains %d at index %d\n", i, idx);
         else
             printf("list doesn't contain %d\n", i);
+        ll_print(ll);
     }
-    ll_print(ll);
 
     // remove elements to 0
     for (int i = 0; i < 7; i++) { // two bad removals at the end
         result = ll_remove_first(ll);
         if (!result)
             printf("remove returned false\n"); // should print twice at end
+        ll_print(ll);
     }
-    ll_print(ll);
 
-    strcpy(ret, "success");
-    pthread_exit(ret);
+    printf("EXITING THREAD\n");
+    pthread_exit("success");
 }
 
 int
