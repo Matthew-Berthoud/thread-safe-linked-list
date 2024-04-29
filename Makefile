@@ -1,6 +1,6 @@
 CC     = gcc
 INC    = -I.
-CFLAGS = $(INC) -Wall -Wextra -Werror -pthread -o3
+CFLAGS = $(INC) -Wall -Wextra -Werror -pthread -o3 #-g
 CFILES = $(wildcard *.c) 
 OBJS   = $(patsubst %.c, %.o,$(CFILES))
 BIN    = test

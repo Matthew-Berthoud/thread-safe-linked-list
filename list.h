@@ -125,9 +125,9 @@ bool ll_remove_idx(struct linked_list *ll, int idx) {
 
     printf("ll_remove_idx\n");
 
-    if (ll_length(ll) == 0) {
-        return false;
-    }
+//    if (ll_length(ll) == 0) {
+//        return false;
+//    }
     if (idx == 1) {
         return ll_remove_first(ll);
     }
@@ -136,6 +136,11 @@ bool ll_remove_idx(struct linked_list *ll, int idx) {
 
     pthread_mutex_lock(&ll->lock);
     prev = ll->head;
+    // length can become 0 between the earlier check and now, since it's not locked
+    if (prev == NULL) {
+        pthread_mutex_unlock(&ll->lock);
+        return false;
+    }
     cur = prev->next;
     while (cur != NULL) {
         if (idx == i) {
