@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#define cas __sync_bool_compare_and_swap
+
 
 struct list_item {
     int value;
@@ -75,7 +77,7 @@ void ll_add(struct linked_list *ll, int value) {
     do {
         next = ll->head;
         new_item->next = next;
-    } while (!__sync_bool_compare_and_swap(&(ll->head), next, new_item));
+    } while (!cas(&(ll->head), next, new_item));
 }
 
 
@@ -108,49 +110,45 @@ bool ll_remove_first(struct linked_list *ll) {
             return false;
         }
         new_head = cur_head->next;
-    } while (!__sync_bool_compare_and_swap(&(ll->head), cur_head, new_head));
+    } while (!cas(&(ll->head), cur_head, new_head));
 
     return true;
 }
 
 
 bool ll_remove_idx(struct linked_list *ll, int idx) {
-    struct list_item *cur, *prev;
-    bool removed;
+    struct list_item *cur, *to_delete;
     int i;
 
     printf("ll_remove_idx\n");
 
-//    if (ll_length(ll) == 0) {
-//        return false;
-//    }
     if (idx == 1) {
         return ll_remove_first(ll);
-    }
-    removed = false;
-    i = 2;
-
-    pthread_mutex_lock(&ll->lock);
-    prev = ll->head;
-    // length can become 0 between the earlier check and now, since it's not locked
-    if (prev == NULL) {
-        pthread_mutex_unlock(&ll->lock);
+    } else if (idx < 1) {
         return false;
     }
-    cur = prev->next;
+    // idx >= 2
+start_over:
+    i = 2;
+    cur = ll->head;
     while (cur != NULL) {
-        if (idx == i) {
-            prev->next = cur->next;
-            removed = true;
-            break;
+        if (i != idx - 1) {
+            i++;
+            continue;
         }
-        prev = cur;
-        cur = cur->next;
-        i++;
+        to_delete = cur->next;
+        if (cur->next == NULL) {
+            return false;
+        } 
+        if (to_delete->next == NULL || cas(&(cur->next), to_delete, to_delete->next)) {
+            free(to_delete);
+            to_delete = NULL;
+            return true;
+        }
+        goto start_over;
     }
-    pthread_mutex_unlock(&ll->lock);
 
-	return removed;
+	return false;
 }
 
 
