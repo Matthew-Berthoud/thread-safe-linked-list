@@ -21,8 +21,7 @@ struct linked_list {
 };
 
 
-static inline struct linked_list *
-ll_create(void) {
+struct linked_list * ll_create(void) {
 	struct linked_list *ll;
     int rc;
 
@@ -39,8 +38,7 @@ ll_create(void) {
 
 
 // Returns 1 if list destroyed, 0 if not
-static inline int
-ll_destroy(struct linked_list *ll) {
+int ll_destroy(struct linked_list *ll) {
     int rc, empty;
 
     printf("ll_destroy\n");
@@ -64,8 +62,7 @@ ll_destroy(struct linked_list *ll) {
 }
 
 
-static inline void
-ll_add(struct linked_list *ll, int value) {
+void ll_add(struct linked_list *ll, int value) {
     struct list_item *new_item;
 
     printf("ll_add\n");
@@ -82,8 +79,7 @@ ll_add(struct linked_list *ll, int value) {
 }
 
 
-static inline int
-ll_length(struct linked_list *ll) {
+int ll_length(struct linked_list *ll) {
     struct list_item *cur;
     int n;
 
@@ -103,8 +99,7 @@ ll_length(struct linked_list *ll) {
 }
 
 
-static inline bool
-ll_remove_first(struct linked_list *ll) {
+bool ll_remove_first(struct linked_list *ll) {
     bool removed;
 
     printf("ll_remove_first\n");
@@ -123,8 +118,7 @@ ll_remove_first(struct linked_list *ll) {
 }
 
 
-static inline int
-ll_contains(struct linked_list *ll, int value) {
+int ll_contains(struct linked_list *ll, int value) {
     struct list_item *cur;
     int i;
 
@@ -151,8 +145,7 @@ ll_contains(struct linked_list *ll, int value) {
 }
 
 
-static inline void
-ll_print(struct linked_list *ll) {
+void ll_print(struct linked_list *ll) {
     struct list_item *cur;
     int length;
 

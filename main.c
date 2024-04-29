@@ -5,99 +5,128 @@
 
 #include "list.h"
 
-#define NUM_THREADS 100
+#define MAX_THREADS 100
+#define MIN_THREADS 5
+// elements added to list will be multiples of 5
+#define MULT 5
 
 
-void
-*thread(void *arg)
-{
-    struct linked_list *ll = arg;
+void test_add(struct linked_list *ll, int num_elements) {
+    int i;
 
-    // add some elements
-    ll_add(ll, 34);
-    ll_print(ll);
-
-    int elements[] = {4, 76, -23, 7, 0, 23, -37};
-    for (int i = 0; i < 7; i++) {
-        ll_add(ll, elements[i]);
+    for (i = 0; i < num_elements; i++) {
+        ll_add(ll, i * MULT);
         ll_print(ll);
     }
-
-    // delete some elements
-    bool result;
-    for (int i = 0; i < 3; i++) {
-        result = ll_remove_first(ll);
-        if (!result)
-            printf("remove returned false\n");
-        ll_print(ll);
-    }
-        
-    // try to destroy
-//    int ret = ll_destroy(ll);
-//    if (!ret)
-//        printf("cannot destroy a full list\n");
-//    else
-//        printf("destroyed a full list\n");
-//    ll_print(ll);
-
-    // check contains
-    for (int i = 3; i < 9; i++) {
-        int idx = ll_contains(ll, i);
-        if (idx)
-            printf("list contains %d at index %d\n", i, idx);
-        else
-            printf("list doesn't contain %d\n", i);
-        ll_print(ll);
-    }
-
-    // remove elements to 0
-    for (int i = 0; i < 7; i++) { // two bad removals at the end
-        result = ll_remove_first(ll);
-        if (!result)
-            printf("remove returned false\n"); // should print twice at end
-        ll_print(ll);
-    }
-
-    printf("EXITING THREAD\n");
-    pthread_exit("success");
 }
 
-int
-main(void)
-{
-    struct linked_list *ll = ll_create();
-    pthread_t threads[NUM_THREADS];
-    int rc;
 
-    for (int i = 0; i < NUM_THREADS; i++) {
-        rc = pthread_create(&threads[i], NULL, thread, (void*)ll);
-        if (rc) {
-            printf("thread %d creation failed with code %d\n", i, rc);
-            exit(rc);
+void test_remove_first(struct linked_list *ll, int num_elements) {
+    int i;
+
+    for (i = 0; i < num_elements; i++) {
+        if (!ll_remove_first(ll)) {
+            printf("remove failed (size 0)\n");
         }
+        ll_print(ll);
+    }
+}
+
+
+void test_contains(struct linked_list *ll, int num_elements) {
+    int i, idx;
+
+    for (i = 0; i < num_elements; i++) {
+        idx = ll_contains(ll, i * MULT);
+        if (idx) {
+            printf("contains %d at index %d\n", i, idx);
+        } else {
+            printf("doesn't contain %d\n", i);
+        }
+        ll_print(ll);
+    }
+}
+
+
+void *thread(void *arg) {
+    struct linked_list *ll = arg;
+
+    test_add(ll, 10);
+    test_remove_first(ll, 5);
+    test_contains(ll, 10);
+
+    test_add(ll, 5);
+    test_contains(ll, 10);
+    test_remove_first(ll, 10);
+
+    printf("exiting thread\n");
+    pthread_exit("");
+}
+
+
+void run_threads(struct linked_list *ll, int n) {
+    pthread_t threads[n];
+    int i, rc;
+
+    printf("beginning thread creation\n");
+
+    for (i = 0; i < n; i++) {
+        rc = pthread_create(&threads[i], NULL, thread, (void*)ll);
+        assert(rc == 0);
         printf("thread %d created\n", i);
     }
 
-    for (int i = 0; i < NUM_THREADS; i++) {
+    for (i = 0; i < n; i++) {
         rc = pthread_join(threads[i], NULL);
-        if (rc) {
-            printf("thread %d join failed with code %d\n", i, rc);
-            exit(rc);
-        }
+        assert(rc == 0);
         printf("thread %d joined\n", i);
     }
 
-    printf("all threads finished!\n");
-
-    // destroy
-    rc = ll_destroy(ll);
-    if (!rc)
-        printf("list doesn't register as empty... yikes!\n");
-    else {
-        printf("successfully destroyed list!\n");
-    }
-
-	return 0;
+    printf("all threads finished!\n\n");
+    ll_print(ll);
 }
 
 
+void thread_test_list(int n) {
+    struct linked_list *ll;
+    int rc;
+
+    // make the list
+    ll = ll_create(); 
+    printf("list created\n");
+    ll_print(ll);
+
+    run_threads(ll, n);
+
+    // empty the list (if needed)
+    while (ll->head != NULL) {
+        ll_remove_first(ll);
+    }
+
+    // destroy the list
+    rc = ll_destroy(ll);
+    if (!rc)
+        printf("failed to destroy list!\n");
+    else {
+        printf("successfully destroyed list!\n");
+    }
+}
+
+
+int main(int argc, char *argv[]) {
+    int n_threads;
+
+    if (argc != 2) {
+        printf("Usage: %s <num_threads>\n", argv[0]);
+        return 1;
+    }
+
+    n_threads = atoi(argv[1]);
+    if (n_threads <= MIN_THREADS || n_threads > MAX_THREADS) {
+        printf("Use 5-200 threads\n");
+        return 1;
+    }
+
+    thread_test_list(n_threads);
+    return 0;
+}
