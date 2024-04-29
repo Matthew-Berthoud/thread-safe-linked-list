@@ -85,7 +85,6 @@ int ll_length(struct linked_list *ll) {
 
     printf("ll_length\n");
 
-    pthread_mutex_lock(&ll->lock);
     cur = ll->head;
     n = 0;
 
@@ -93,28 +92,25 @@ int ll_length(struct linked_list *ll) {
         cur = cur->next;
         n++;
     }
-    pthread_mutex_unlock(&ll->lock);
 
     return n;
 }
 
 
 bool ll_remove_first(struct linked_list *ll) {
-    bool removed;
+    struct list_item *new_head, *cur_head;
 
     printf("ll_remove_first\n");
 
-    pthread_mutex_lock(&ll->lock);
-    if (ll->head == NULL) {
-        removed = false;
-    }
-    else {
-        ll->head = ll->head->next;
-        removed = true;
-    }
-    pthread_mutex_unlock(&ll->lock);
+    do {
+        cur_head = ll->head;
+        if (cur_head == NULL) {
+            return false;
+        }
+        new_head = cur_head->next;
+    } while (!__sync_bool_compare_and_swap(&(ll->head), cur_head, new_head));
 
-	return removed;
+    return true;
 }
 
 
